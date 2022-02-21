@@ -1,4 +1,4 @@
-The first two digits of files names indicate the main stage.
+The first two digits of file names indicate the main stage.
 
 01 = Get climate data for modelling  
 02 = Model selection and cross-validation  
