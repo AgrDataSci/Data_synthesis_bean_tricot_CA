@@ -49,8 +49,8 @@ ggsave("output/figures/plt_01.png", dpi = 300, width = 12, height = 8)
 #for AOA maps, run script 09_dis_index.R first
 
 ###########################################################
-source("script/06_get_ranking_probabilities/get_entropy.R")
-source("script/06_get_ranking_probabilities/get_ranking_probabilities.R")
+source("script/utils/get_entropy.R")
+source("script/utils/get_ranking_probabilities.R")
 
 
 
