@@ -10,13 +10,13 @@ library(RColorBrewer)
 
 library(igraph)
 
-library(ggnet2)
-library(sna) #for function  %v% 
+#library(ggnet2)
+#library(sna) #for function  %v% 
 
-library(ggsp)
-library(ggspatial)
-library(patchwork)
-library(cowplot)
+# library(ggsp)
+# library(ggspatial)
+# library(patchwork)
+# library(cowplot)
 
 
 
@@ -120,7 +120,7 @@ ca_trials_map <- ggplot() +
         axis.title.x = element_blank(),
         axis.title.y = element_blank())
 
-
+ca_trials_map
 
 ggsave(filename = "output/figures/figure_1_004.png", width = 12, height = 8, dpi = 300)
 
@@ -151,7 +151,28 @@ genotypes <- tapply(genotype_names,
 
 rbca_adj <- adjacency(rbca_ranks)
 
-net <- network::network(rbca_adj)
+net <- network::network(rbca_adj, names.eval = "weights")
+
+igraph_net <- graph.adjacency(rbca_adj,weighted = T)
+
+
+
+E(igraph_net)$weight
+
+ggnet <- ggnetwork(igraph_net)
+
+# ggnet$type <- ifelse(ggnet$name %in% exp_list, 
+#                      "Experimental line", 
+#                      "Released variety")
+# 
+# ggplot(ggnet, aes(x = x, y = y, xend = xend, yend = yend)) +
+#   geom_edges(aes(color = weight/100), 
+#              arrow = arrow(length = unit(6, "pt")),
+#              color = "grey50", curvature = 0, size =.5) +
+#   geom_nodes(aes(color = type), size = 8) +
+#   theme_net()
+  
+
 
 landr_list <- c("Rosado", "Seda")
 
@@ -162,6 +183,13 @@ exp_list <- c("BCR 122-74", "BFS 47", "BRT 103-182",
 
 genotypes <- network::network.vertex.names(net)
 
+network::get.vertex.attribute(net, "vertex.names")
+
+network::set.vertex.attribute(net, "Type", 
+                              ifelse(genotypes %in% exp_list, 
+                                     "Experimental line", 
+                                     "Released variety"))
+
 exp_list %in% genotypes
 
 genotypes
@@ -169,7 +197,7 @@ genotypes
 # net %v% "Type" = ifelse(genotypes %in% landr_list, "Landrace", 
 #                         ifelse(genotypes %in% exp_list, "Experimental line", "Released Variety"))
 
-net %v% "Type" = ifelse(genotypes %in% exp_list, "Experimental line", "Released Variety")
+#net %v% "Type" = ifelse(genotypes %in% exp_list, "Experimental line", "Released variety")
 
 custom_palette <- c("ALS 0532-6" = "#4476AC",
                     "EAP 9510-77" = "#4476AC",
@@ -206,22 +234,25 @@ type_palette_1 <- c("Landrace" = "#FF7F00",
                     "Released Variety" = "#99CC33")
 
 type_palette_2 <- c(#"Landrace" = "#f1c40f",
-  "Experimental line" = "#e74c3c",
-  "Released Variety" = "#52be80")
+  "Experimental line" = "#d73027",
+  "Released variety" = "#1a9850")
+
+type_palette_3 <- c("Experimental line" = "#ca0020",
+                    "Released variety" = "#104e8b")
 
 GGally::ggnet2(net, 
                label = TRUE,
                arrow.size = 8, 
-               edge.color = "darkgrey",
-               mode = "kamadakawai",
+               edge.color = "gray40",
+               mode = "fruchtermanreingold",
                arrow.gap = 0.03, 
                color = "Type",
                palette = type_palette_2,
                legend.size = 12,
-               ) 
+               fontface = "plain"
+                             ) 
 
-
-ggsave("output/figures/gen_net_17.png", width = 12, height = 6, dpi = 300)
+ggsave("output/figures/gen_net_17_v03.png", width = 12, height = 6, dpi = 600, units = "in")
 
 #### end of Figure 2 ####
 
@@ -257,7 +288,9 @@ plot_trial_maps <- function(X){
                                           colour = "aliceblue",
                                           size = 0.5, linetype = "solid"),
           legend.key = element_rect(fill = "transparent", colour = "transparent"),
-          legend.key.size = unit(.25, "cm"),
+          legend.key.size = unit(.25, "in"),
+          legend.text = element_text(size = 12),
+          axis.text = element_text(size = 10),
           plot.margin = margin(0, 0, 20, 0))
   
 }
@@ -284,8 +317,9 @@ gen_trial_plots <- lapply(genotypes, plot_trial_maps)
         (gen_trial_plots$`429 DFSZ 15094-39-4` |
                  gen_trial_plots$`703-SM 15216-11-5` )
 
-ggsave("output/figures/genotype_x_trial_maps_02.png",
-       dpi = 300)
+ggsave("output/figures/genotype_x_trial_maps_03.png",
+       dpi = 600,
+       wid)
 
 #only genotypes in top-3
 
@@ -298,9 +332,17 @@ ggsave("output/figures/genotype_x_trial_maps_02.png",
      gen_trial_plots$`SRC 2-18-1` | 
      gen_trial_plots$`SX 14825-7-1`)
 
-ggsave("output/figures/top_3_genotype_x_trial_maps_01_.png",
-       width = 8.5, height = 6.5,
-       dpi = 300)
+# ggsave("output/figures/top_3_genotype_x_trial_maps_02_.png",
+#        width = 18,
+#        height = 9,
+#        dpi = 600,
+#        units = "in")
+
+ggsave("output/figures/top_3_genotype_x_trial_maps_03_.png",
+       width = 18,
+       height = 9,
+       dpi = 400,
+       units = "in")
 
 #####end Figure 9 ##########################
 
