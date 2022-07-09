@@ -5,7 +5,7 @@ library(PlackettLuce)
 library(network)
 library(GGally)
 
-library(grid)
+#library(grid)
 library(RColorBrewer)
 
 library(igraph)
