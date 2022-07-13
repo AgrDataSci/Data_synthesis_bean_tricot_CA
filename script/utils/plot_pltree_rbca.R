@@ -6,7 +6,7 @@ plot_tree_2 <- function(object,
                         log = TRUE, 
                         ref = NULL,
                         add.letters = FALSE,
-                        ci.level = 0.95, 
+                        ci.level = 0.95,
                         ...){
   
   dots <- list(...)
@@ -48,7 +48,7 @@ plot_tree_2 <- function(object,
     
     # get item parameters from model
     coeffs <- try(lapply(nodes, function(x){
-      z <- psychotools::itempar(x, vcov = TRUE, log = log)
+      z <- psychotools::itempar(x, vcov = TRUE, log = log, ref = ref)
       # get estimates from item parameters using qvcalc
       z <- qvcalc::qvcalc(z)$qvframe
       }), silent = TRUE)
@@ -59,7 +59,7 @@ plot_tree_2 <- function(object,
               "using rankings from each node \n")
       
       coeffs <- try(lapply(nodes, function(x) {
-        psychotools::itempar(x, vcov = FALSE, log = log)
+        psychotools::itempar(x, vcov = FALSE, log = log, ref = ref)
       }), silent = TRUE)
       
       # update the model, this will check if ranking is complete in each node 
@@ -76,7 +76,7 @@ plot_tree_2 <- function(object,
         
         Z <- update(x, rankings = Z, weights = freq(Z), start = NULL)
         
-        Z <- psychotools::itempar(Z, vcov = TRUE, log = log)
+        Z <- psychotools::itempar(Z, vcov = TRUE, log = log, ref = ref)
         
         # get estimates from item parameters using qvcalc
         Z <- qvcalc::qvcalc(Z)
@@ -118,7 +118,7 @@ plot_tree_2 <- function(object,
     
     add.letters <- FALSE
     
-    coeffs <- itempar(object, vcov = FALSE, log = log)
+    coeffs <- itempar(object, vcov = FALSE, log = log, ref = ref)
     
     x <- list()
     for (i in seq_len(dim(coeffs)[[1]])) {
@@ -212,11 +212,11 @@ plot_tree_2 <- function(object,
     
   }
   
-  node_lev <- unique(paste0("Node ", coeffs$node, " (n=", coeffs$nobs, ")"))
+  node_lev <- unique(paste0("Node ", coeffs$node, " (n = ", coeffs$nobs, ")"))
   
   coeffs$id <- coeffs$node
   
-  coeffs$node <- factor(paste0("Node ", coeffs$node, " (n=", coeffs$nobs, ")"),
+  coeffs$node <- factor(paste0("Node ", coeffs$node, " (n = ", coeffs$nobs, ")"),
                         levels = node_lev)
   
   coeffs$items <- factor(coeffs$items, levels = rev(sort(items)))
@@ -242,7 +242,7 @@ plot_tree_2 <- function(object,
     tree <- 
       ggparty::ggparty(object, terminal_space = 0) +
       ggparty::geom_edge() +
-      ggparty::geom_edge_label(mapping = aes(label = unlist(rnd_labels))) +
+      ggparty::geom_edge_label(mapping = aes(label = unlist(rnd_labels)), size = 6) +
       ggplot2::theme(legend.position = "none") +
       ggparty::geom_node_label(line_list = list(
         aes(label = splitvar),
@@ -298,20 +298,36 @@ plot_tree_2 <- function(object,
   # Check font size for axis X and Y, and plot title
   s.axis <- 13
   
+  #Add colors to genotypes names by type (released vs experimental)
+  node_2_coef <- coeffs[coeffs$id == 2, ]
+  
+  exp_list <- c("BCR 122-74", "BFS 47", "BRT 103-182", 
+                "MHC 2-13-49", "MHR 311-17", "RRH 336-28",
+                "RS 907-28", "RS 909-35", "SRS2-36-34")
+  
+  #gen_pal_txt <- ifelse(items %in% exp_list, "#ca0020", "gray25")
+  gen_pal_txt <- ifelse(items %in% exp_list, "#ca0020", "gray25")
+  
+  
+  
+  gen_pal_txt <- gen_pal_txt[order(node_2_coef$items)]
+  
+  ######----------------#####
+  
   p <- 
     ggplot2::ggplot(coeffs, 
                     ggplot2::aes(x = estimate, 
                                  y = items)) +
     ggplot2::theme_bw() +
     ggplot2::geom_vline(xintercept = xinter, 
-                        colour = "darkgray", size = 0.7) +
+                        color = "darkgray", size = 0.7) +
     # geom_text(aes(label = groups),
     #           position = position_nudge(y = nudge.y, x = nudge.x)) +
     ggplot2::geom_point(pch = 18, size = 2.5, 
-                        fill = "black",colour = "black") +
+                        fill = "grey20", color = "grey20") +
     ggplot2::geom_errorbarh(ggplot2::aes(xmin = bmin,
                                          xmax = bmax),
-                            colour="black", height = 0.1) +
+                            color= "grey20", height = 0.1) +
     # ggplot2::scale_x_continuous(limits = c(xmin, xmax),
     #                             breaks = xbreaks,
     #                             labels = xlabs) +
@@ -319,22 +335,24 @@ plot_tree_2 <- function(object,
     
     theme(axis.text.y = element_text(size = 40))+
     ggplot2::labs(x = "log(worth)", y = "") +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(size = s.axis, angle = 0,
+    ggplot2::theme(axis.text.x = element_text(size = s.axis, angle = 0,
                                                        hjust = 0.5, vjust = 1, 
                                                        face = "plain",
-                                                       colour = "black"),
-                   axis.text.y = ggplot2::element_text(size = s.axis, angle = 0,
+                                                       color = "black"),
+                   axis.text.y = element_text(size = s.axis, angle = 0,
                                                        hjust = 1, vjust = 0.5, 
-                                                       face = "plain",
-                                                       colour = "black"),
+                                                       face = "bold",
+                                                       color = gen_pal_txt),
                    text = element_text(size = letter.size),
                    strip.background = element_blank(),
-                   plot.background = ggplot2::element_blank(),
-                   panel.grid.major = ggplot2::element_blank(),
+                   #plot.background = ggplot2::element_blank(),
+                   #panel.grid = element_blank(),
                    panel.grid.minor = ggplot2::element_blank(),
-                   panel.border = ggplot2::element_rect(colour = "black", size = 1),
-                   axis.ticks = ggplot2::element_line(colour = "black", size = 0.5),
-                   axis.ticks.length = grid::unit(0.3, "cm"))
+                   panel.grid.major.x = element_blank(),
+                   panel.border = element_rect(color = "gray25", size = 1),
+                   axis.ticks = element_line(color = "black", size = 0.5),
+                   #axis.ticks.length = grid::unit(0.3, "cm")
+                   )
   
   if(length(node_id) > 1){
     p <- (tree / p)

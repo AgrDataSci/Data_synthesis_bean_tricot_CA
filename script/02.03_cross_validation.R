@@ -1,3 +1,25 @@
+library(PlackettLuce)
+library(gosset)
+library(caret)
+
+# read rankings data with covariates
+source("script/utils/load_rbca_data.R")
+
+#put covariates in a separate df for preprocessing
+covar <- rbca_data[, -1]
+
+names(covar)
+
+#remove covariates with near zero variance
+out_r <- caret::nearZeroVar(covar)
+
+names(covar)[out_r]
+
+covar <- covar[, -out_r]
+
+colnames(covar)
+
+
 
 cross_validation <- function(.formula, .data, .folds){
   
@@ -34,7 +56,6 @@ cross_validation <- function(.formula, .data, .folds){
                                       verbose = FALSE,
                                       ncores = 6,
                                       dfsplit = FALSE
-                                      #prune = "AIC"
                                       )
     
     plt_models[[j]] <- plt_model
@@ -122,7 +143,7 @@ cv_plt_01 <- cross_validation(.formula = rbca_ranks ~ WSDI + R20mm + T10p + hts_
                               .data = rbca_data,
                               .folds = rbca_folds
                               )
-
+cv_plt_01[[1]]
 cv_plt_01[[1]][3]
 
 
@@ -156,6 +177,14 @@ cv_plt_04 <- cross_validation(.formula = rbca_ranks ~ 1,
                               .folds = rbca_folds)
 
 round(cv_plt_04[[1]], 4)
+
+
+cv_results <- rbind(cbind("model" = "no covariates", round(cv_plt_04[[1]], 4)),
+                    cbind("model" = "env covariates", round(cv_plt_01[[1]], 4)),
+                    cbind("model" = "env + geo covariates", round(cv_plt_02[[1]], 4)),
+                    cbind("model" = "geo only", round(cv_plt_03[[1]], 4)))
+
+write.table(cv_results, file = "output/cv_results.csv", sep = ",", row.names = FALSE)
 
 
 #### End of script ####

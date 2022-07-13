@@ -41,9 +41,13 @@ plt_01 <- PlackettLuce::pltree(rbca_ranks ~ WSDI + R20mm + T10p + hts_mean_19_fl
 
 plt_01
 
-plot_tree_2(plt_01, log = TRUE)
+plot_tree_2(plt_01, log = TRUE, ref = NULL)
 
-ggsave("output/figures/plt_01.png", dpi = 300, width = 12, height = 8)
+ggsave("output/figures/plt_01_v02.png",
+       dpi = 600, 
+       width = 10, 
+       height = 8,
+       units = "in")
 
 
 #for AOA maps, run script 09_dis_index.R first
