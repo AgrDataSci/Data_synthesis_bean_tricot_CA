@@ -2,7 +2,7 @@
 
 ### Description
 
-Code repository for the paper *"Rank-based data synthesis of common bean on-farm trials across four Central American countries"*, submitted to *Crop Science*.
+Code repository for the paper *"Rank-based data synthesis of common bean on-farm trials across four Central American countries"*, published in *Crop Science* DOI: [10.1002/csc2.20817](https://doi.org/10.1002/csc2.20817).
 
 ### Data
 
